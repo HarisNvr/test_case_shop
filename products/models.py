@@ -4,8 +4,9 @@ from django.db import models
 from django.db.models import UniqueConstraint
 
 from .constants import (
-    CATEGORY_NAME, CATEGORY_SLUG, SUBCATEGORY_NAME, SUBCATEGORY_SLUG,
-    PRODUCT_NAME, PRODUCT_SLUG, PRICE_MAX, PRICE_LEN, SHOPPING_CART_MAX
+    CATEGORY_NAME_LEN, CATEGORY_SLUG_LEN, SUBCATEGORY_NAME_LEN,
+    SUBCATEGORY_SLUG_LEN, PRODUCT_NAME_LEN, PRODUCT_SLUG_LEN, PRICE_MAX,
+    PRICE_LEN, SHOPPING_CART_MAX
 )
 
 
@@ -13,12 +14,12 @@ class Category(models.Model):
     name = models.CharField(
         'Название',
         unique=True,
-        max_length=CATEGORY_NAME
+        max_length=CATEGORY_NAME_LEN
     )
     slug = models.SlugField(
         'Уникальный слаг',
         unique=True,
-        max_length=CATEGORY_SLUG
+        max_length=CATEGORY_SLUG_LEN
     )
     image = models.ImageField(
         'Изображение',
@@ -47,12 +48,12 @@ class SubCategory(models.Model):
     name = models.CharField(
         'Название',
         unique=True,
-        max_length=SUBCATEGORY_NAME
+        max_length=SUBCATEGORY_NAME_LEN
     )
     slug = models.SlugField(
         'Уникальный слаг',
         unique=True,
-        max_length=SUBCATEGORY_SLUG
+        max_length=SUBCATEGORY_SLUG_LEN
     )
     image = models.ImageField(
         'Изображение',
@@ -79,11 +80,11 @@ class SubCategory(models.Model):
 
 
 class Product(models.Model):
-    name = models.CharField('Название', max_length=PRODUCT_NAME)
+    name = models.CharField('Название', max_length=PRODUCT_NAME_LEN)
     slug = models.SlugField(
         'Уникальный слаг',
         unique=True,
-        max_length=PRODUCT_SLUG
+        max_length=PRODUCT_SLUG_LEN
     )
     price = models.DecimalField(
         'Цена',
@@ -112,6 +113,14 @@ class Product(models.Model):
         'Изображение',
         upload_to='products/large/'
     )
+    category = models.ForeignKey(
+        Category,
+        verbose_name='Категория',
+        related_name='products',
+        null=True,
+        on_delete=models.SET_NULL,
+        editable=False
+    )
     subcategory = models.ForeignKey(
         SubCategory,
         verbose_name='Подкатегория',
@@ -119,6 +128,11 @@ class Product(models.Model):
         null=True,
         on_delete=models.SET_NULL
     )
+
+    def save(self, *args, **kwargs):
+        if self.subcategory:
+            self.category = self.subcategory.parent_category
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ['-id']

@@ -33,6 +33,7 @@ class ProductAdmin(admin.ModelAdmin):
         'name',
         'slug',
         'price',
+        'category',
         'subcategory'
     )
     list_filter = ('name', 'slug', 'price', 'subcategory')

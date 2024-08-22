@@ -1,13 +1,18 @@
 import os
 from pathlib import Path
 
+from django.core.management.utils import get_random_secret_key
+from dotenv import load_dotenv
+
+load_dotenv()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-0(al(_cwc(az2ob13-#ql%_hszq=8qy@!$#6vwi!sv@48p+^k4'
+SECRET_KEY = os.getenv('SECRET_KEY', get_random_secret_key())
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -18,8 +23,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
 
-    'products.apps.ProductsConfig'
+    'products.apps.ProductsConfig',
+    'api.apps.ApiConfig'
 ]
 
 MIDDLEWARE = [

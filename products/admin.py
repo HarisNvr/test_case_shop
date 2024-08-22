@@ -37,15 +37,3 @@ class ProductAdmin(admin.ModelAdmin):
         'subcategory'
     )
     list_filter = ('name', 'slug', 'price', 'subcategory')
-
-
-@admin.register(ShoppingCart)
-class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = (
-        'user',
-        'product',
-        'quantity',
-        'product_price',
-        'total_price'
-    )
-    list_filter = ('user', 'product')

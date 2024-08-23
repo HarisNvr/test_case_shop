@@ -1,7 +1,11 @@
-from rest_framework.fields import SerializerMethodField
+from django.core.validators import MinValueValidator, MaxValueValidator
+from rest_framework.exceptions import ValidationError
+from rest_framework.fields import SerializerMethodField, DecimalField
+from rest_framework.relations import PrimaryKeyRelatedField
 from rest_framework.serializers import ModelSerializer
 
-from products.models import Category, SubCategory, Product
+from products.constants import PRICE_LEN, SHOPPING_CART_MAX
+from products.models import Category, SubCategory, Product, ShoppingCart
 
 
 class CategorySerializer(ModelSerializer):
@@ -48,3 +52,59 @@ class ProductSerializer(ModelSerializer):
             'medium': obj.image_medium.url if obj.image_medium else None,
             'large': obj.image_large.url if obj.image_large else None,
         }
+
+
+class ShoppingCartSerializer(ModelSerializer):
+    products = SerializerMethodField()
+    product = PrimaryKeyRelatedField(
+        queryset=Product.objects.all(),
+        write_only=True
+    )
+    quantity = DecimalField(
+        max_digits=PRICE_LEN,
+        decimal_places=1,
+        write_only=True
+    )
+
+    class Meta:
+        model = ShoppingCart
+        fields = ('products', 'product', 'quantity')
+        read_only_fields = ('user',)
+
+    def validate(self, data):
+        product = data.get('product')
+        quantity = data.get('quantity')
+
+        if not Product.objects.filter(pk=product.pk).exists():
+            raise ValidationError({'product': 'Продукт не существует!'})
+
+        if quantity <= 0:
+            raise ValidationError(
+                {'quantity': 'Количество должно быть больше 0!'})
+        if quantity > SHOPPING_CART_MAX:
+            raise ValidationError(
+                {'quantity': f'Максимальное количество {SHOPPING_CART_MAX}!'})
+
+        if quantity.as_tuple().exponent < -1:
+            raise ValidationError(
+                {'quantity': 'Количество может иметь не более одного знака '
+                             'после запятой!'}
+            )
+
+        return data
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request is None:
+            raise ValidationError({'detail': 'Необходим контекст запроса.'})
+
+        user = request.user
+        return ShoppingCart.objects.create(user=user, **validated_data)
+
+    def get_products(self, obj):
+        return [
+            {
+                'product': obj.product.name,
+                'quantity': obj.quantity
+            }
+        ]

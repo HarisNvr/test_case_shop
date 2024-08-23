@@ -9,6 +9,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', get_random_secret_key())
+# .env файл для примера положил в корень проекта
 
 DEBUG = True
 

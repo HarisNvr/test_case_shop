@@ -1,4 +1,3 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField, DecimalField
 from rest_framework.relations import PrimaryKeyRelatedField
@@ -65,18 +64,18 @@ class ShoppingCartSerializer(ModelSerializer):
         decimal_places=1,
         write_only=True
     )
+    total_product_price = SerializerMethodField()
 
     class Meta:
         model = ShoppingCart
-        fields = ('products', 'product', 'quantity')
+        fields = (
+            'products', 'product', 'quantity', 'product_price',
+            'total_product_price'
+        )
         read_only_fields = ('user',)
 
     def validate(self, data):
-        product = data.get('product')
         quantity = data.get('quantity')
-
-        if not Product.objects.filter(pk=product.pk).exists():
-            raise ValidationError({'product': 'Продукт не существует!'})
 
         if quantity <= 0:
             raise ValidationError(
@@ -87,8 +86,8 @@ class ShoppingCartSerializer(ModelSerializer):
 
         if quantity.as_tuple().exponent < -1:
             raise ValidationError(
-                {'quantity': 'Количество может иметь не более одного знака '
-                             'после запятой!'}
+                {'quantity': 'Количество может иметь не более '
+                             'одного знака после запятой!'}
             )
 
         return data
@@ -101,10 +100,16 @@ class ShoppingCartSerializer(ModelSerializer):
         user = request.user
         return ShoppingCart.objects.create(user=user, **validated_data)
 
+    def get_total_product_price(self, obj):
+        return obj.product.price * obj.quantity
+
     def get_products(self, obj):
         return [
             {
                 'product': obj.product.name,
-                'quantity': obj.quantity
+                'id': obj.product.id,
+                'quantity': obj.quantity,
+                'product_price': obj.product.price,
+                'total_product_price': self.get_total_product_price(obj)
             }
         ]

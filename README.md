@@ -14,9 +14,9 @@
 - /api/shopping_cart/ (GET) - получение всех продуктов в корзине
 - /api/shopping_cart/ (POST) - добавление продукта в корзину
 - `{"product": <pk>, "quantity": n}`
-- /api/shopping_cart/<pk> (PATCH) - изменение кол-ва продукта в корзине
+- /api/shopping_cart/pk/ (PATCH) - изменение кол-ва продукта в корзине
 - `{"quantity": n}`
-- /api/shopping_cart/<pk> (DELETE) - удаление продукта из корзины
+- /api/shopping_cart/pk/ (DELETE) - удаление продукта из корзины
 - /api/shopping_cart/clear/ (DELETE) - очистка всей корзины
 
 Реализуйте Django проект для магазина продуктов со следующим функционалом:

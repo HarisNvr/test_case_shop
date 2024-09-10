@@ -1,8 +1,6 @@
 from django.contrib import admin
 
-from .models import (
-    Category, SubCategory, Product, ShoppingCart
-)
+from .models import Category, SubCategory, Product
 
 
 @admin.register(Category)

@@ -1,4 +1,3 @@
-products/migrations/*
 .idea
 media
 db.sqlite3
